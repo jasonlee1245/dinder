@@ -5,7 +5,6 @@ const pool = require ('../database.js');
 
 const verifyUser = (req, res, next) => {
   console.log('still showing as user?', req.body.user)
-  let arr = [req.body.user];
   let queryforPass = `SELECT "password" FROM "Users" WHERE "user" = '${req.body.user}'`;
   pool.query(queryforPass, (err, result) => {
     if (err) return res.send('Not Verified');
