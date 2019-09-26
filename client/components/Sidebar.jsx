@@ -22,7 +22,7 @@ class Sidebar extends Component {
     } = this.props;
     let playSecret = dance ? 'dance' : '';
     const favsList = favs.map((fav, idx) => {
-      console.log(fav, '<---- fav')
+      // console.log(fav, '<---- fav')
       return (
         <li key={idx}>
           <a href={fav.yelpurl} target="_blank"> <img src={fav.imgurl}/> </a>
@@ -36,6 +36,7 @@ class Sidebar extends Component {
           <button className='next' onClick={() => deleteFav(fav.yelpid)}>
             <i className='fa fa-times'></i>
           </button>
+          
         </li>
       );
     });
@@ -107,13 +108,11 @@ class Sidebar extends Component {
             </button>
            </div>
            <div className="navBar-buttons">
-            <button
-              className='history'
-              onClick={() => {
+              <button id="viewMap" onClick={() => this.props.viewMap()}><i class="fas fa-map-marked-alt"></i></button>
+              <button className='history' onClick={() => {
                 toggleSidebar();
                 favs;
-              }}
-            >
+              }}>
               <i className='fa fa-history'></i>
             </button>
             <button
@@ -123,8 +122,8 @@ class Sidebar extends Component {
               }} >
               <i className="fas fa-sign-out-alt"></i>
             </button>
+            </div>
            </div>
-        </div>
       </nav>
     );
   }

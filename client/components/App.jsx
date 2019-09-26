@@ -5,6 +5,7 @@ import axios from 'axios';
 import key from '../../config/keys';
 import Login from './Loginpage.jsx';
 import Signup from './SignupPage.jsx';
+import MapDisplay from './MapDisplay.jsx';
 
 const LOCATION_SEARCHED = '1600 Main St 1st floor, Venice, CA 90291';
 let MAX_SIZE = 0;
@@ -15,7 +16,7 @@ class App extends Component {
     this.state = {
       businessList: [],
       currentIndex: 0,
-      visited: [],
+      visited: new Array(50),
       favs: [],
       fetchingDetails: false,
       isSidebarOpen: false,
@@ -26,9 +27,11 @@ class App extends Component {
       dance: false,
       play: false,
       price: null,
+      offset: 0,
+      mapView: false,
       location: LOCATION_SEARCHED,
       cuisine: null,
-      offset: 0
+      index: 0
     };
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
@@ -45,6 +48,7 @@ class App extends Component {
     this.handleLocationChange = this.handleLocationChange.bind(this);
     this.handleCuisineChange = this.handleCuisineChange.bind(this);
     this.handleOptionChange = this.handleOptionChange.bind(this);
+    this.viewMap = this.viewMap.bind(this);
     this.audio = new Audio(
       'https://iringtone.net/rington/file?id=8454&type=sound&name=mp3'
     );
@@ -59,7 +63,6 @@ class App extends Component {
     axios
       .post('/signout', {user: this.state.currentUser})
       .then(res => {
-        console.log('signed out', res.data)
         if(res.data === 'signedOut') {
           this.setState({verified: false, currentUser: '', rerender: true})
         }
@@ -82,7 +85,7 @@ class App extends Component {
   }
 
   submitChoices() {
-    console.log(this.state.location, this.state.cuisine, this.state.price);
+    // console.log(this.state.location, this.state.cuisine, this.state.price);
     const location = this.state.location || LOCATION_SEARCHED;
     const cuisine = this.state.cuisine || 'restaurant';
     const price = this.state.price || '7';
@@ -107,7 +110,6 @@ class App extends Component {
         // create state businessList with necessary infos
         let businessList = [];
         for (let restaurant of res.data.businesses) {
-          console.log(restaurant)
           const businessObj = {
             yelpid: restaurant.id,
             name: restaurant.name,
@@ -118,13 +120,13 @@ class App extends Component {
             imgurl: restaurant.image_url,
             yelpurl: restaurant.url,
             rating: restaurant.rating,
-            phone: restaurant.phone
+            phone: restaurant.phone,
+            coordinates: restaurant.coordinates
           };
           businessList.push(businessObj);
         }
         MAX_SIZE = businessList.length;
         const currentIndex = getRandomNum(MAX_SIZE);
-
         this.setState({
           businessList,
           currentIndex,
@@ -152,12 +154,12 @@ class App extends Component {
     const user = e.target.username.value;
     const pass = e.target.password.value;
 
-    console.log('username and password', user, pass)
+    // console.log('username and password', user, pass)
 
     axios
       .post('/login', { user: user, pass: pass })
       .then(res => {
-        console.log('testing response from login', res)
+        // console.log('testing response from login', res)
         if (res.data === 'verified') {
           this.setState({ verified: true, currentUser: user, rerender: true });
         }
@@ -173,12 +175,11 @@ class App extends Component {
 
   // function invokes when the heart button is clicked in MainContainer
   addFav() {
-    if(this.state.visited.length % 50 === 49) {
+    if(this.state.index === 40) {
+      this.setState({offset: this.state.offset + 50, visited: new Array(50), index: 0})
       this.submitChoices();
     }
-    console.log(this.state.businessList, '<--- businessList')
-    console.log(this.state.visited, '<--- visited')
-    
+    else {
     let favs = this.state.favs.slice();
     let visited = this.state.visited.slice();
 
@@ -196,20 +197,22 @@ class App extends Component {
       currentIndex,
       visited,
       favs,
-      fetchingDetails: false
+      fetchingDetails: false,
+      index: this.state.index+1
     });
 
-    // post new favorite which is current business to the database
     axios
       .post('/favorites', {
         business: this.state.businessList[this.state.currentIndex],
         user: this.state.currentUser
       })
       .then(res => {
-        console.log(res.data);
+        console.log(this.state.currentUser, '<------------- current user')
+        console.log(res.data, '<_---------------@@!!');
       })
       .catch(err => console.log(err));
   }
+}
 
   // function invokes when '??' button is clicked in Sidebar
   deleteFav(yelpid) {
@@ -220,18 +223,18 @@ class App extends Component {
       .then(res => {
         const updateFavs = this.state.favs.filter(fav => fav.yelpid !== yelpid);
         this.setState({ favs: updateFavs });
-        console.log(res.data);
       })
       .catch(err => console.log(err));
   }
 
   // function invokes when the next button is clicked in MainContainer
   moveNext() {
-    if(Object.keys(this.state.visited).length % 50 === 49) {
+    if(this.state.index === 40) {
+      this.setState({offset: this.state.offset + 50, visited: new Array(50), index: 0})
       this.submitChoices();
     }
-
-    let visited = Object.assign(this.state.visited);
+    else {
+    let visited = this.state.visited.slice();
     visited[this.state.currentIndex] = true;
 
     let currentIndex = getRandomNum(MAX_SIZE);
@@ -243,8 +246,10 @@ class App extends Component {
     this.setState({
       currentIndex,
       visited,
-      fetchingDetails: false
+      fetchingDetails: false,
+      index: this.state.index+1
     });
+  }
   }
 
   secret() {
@@ -260,14 +265,14 @@ class App extends Component {
     axios
       .get('/signedin')
       .then(res=> {
-        console.log('looking to see what is in res.data',res)
+        // console.log('looking to see what is in res.data',res)
         if (res.data.verified === 'verified') {
           this.setState({ verified: true, currentUser: res.data.cookie.user, rerender: true});
         }
       })
       .catch(err => console.log(err))
   }
-
+  
   componentDidUpdate() {
     if (this.state.rerender) {
       // get data from yelp business endpoint
@@ -298,11 +303,12 @@ class App extends Component {
               imgurl: restaurant.image_url,
               yelpurl: restaurant.url,
               rating: restaurant.rating,
-              phone: restaurant.phone
+              phone: restaurant.phone,
+              coordinates: restaurant.coordinates
             };
             businessList.push(businessObj);
+            // console.log(businessObj.coordinates)
           }
-          // console.log('business list in fucking app.kjsx', businessList[0]);
           // get favorites from back end database
           axios
             .post('/favorites/fav', { user: this.state.currentUser })
@@ -328,8 +334,6 @@ class App extends Component {
                 favs,
                 rerender: false
               });
-              // console.log("this.state.businessList: ", this.state.businessList);
-              // console.log("this.state.favs: ", this.state.favs);
             })
             .catch(err =>
               console.log(`App.componentDidMount: get favorites: Error: ${err}`)
@@ -343,7 +347,12 @@ class App extends Component {
     }
   }
 
+  viewMap() {
+    this.setState({mapView: !this.state.mapView});
+  }
+
   render() {
+    
     if (this.state.signup === true) {
       return (
         <main>
@@ -367,6 +376,18 @@ class App extends Component {
         </main>
       );
     }
+    
+    if (this.state.mapView === true) {
+      console.log('these are the props being passed down', this.state.businessList)
+      return (
+        <MapDisplay 
+        viewMap={this.state.viewMap}
+        viewMapFunc={this.viewMap}
+        businessList={this.state.businessList} />
+        )
+      } else {
+        console.log('here in post change of state');
+      }
 
     let dance = this.state.dance ? 'dance' : '';
 
@@ -387,6 +408,7 @@ class App extends Component {
           price={this.state.price}
           businessList={this.state.businessList}
           signout={this.signout}
+          viewMap={this.viewMap}
         />
         <MainContainer
           currentBusiness={this.state.businessList[this.state.currentIndex]}

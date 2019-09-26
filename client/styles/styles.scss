@@ -54,7 +54,7 @@ img {
   justify-content: center;
   align-items: center;
   width: 44px;
-  background: navy;
+  background: #000080;
   border-radius: 5px;
   padding: 10px;
   z-index: 1;
@@ -121,13 +121,16 @@ nav {
 .signout {
   background: linear-gradient(45deg, rgb(146, 5, 5), rgb(238, 154, 115));
   color: white;
-  font-size: 20px;
-  height: 60px;
+  font-size: 25px;
+  height: 64px;
   width: 50px;
+  box-shadow: 0 4px 4px -2px #000000;
+  border-bottom: 3.8px black solid;
 }
 
 
 .center-header {
+  margin-left: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,15 +138,17 @@ nav {
   input {
     width: 300px;
     height: 30px;
-    border-radius: 20px;
+    border-radius: 5px;
     margin-right: 5px;
     padding-left: 10px;
+    border: 1px solid black;
   }
 
   select {
     width: 75px;
-    height: 30px;
+    height: 34px;
     border-radius: 20px;
+    border: 1px solid black;
   }
 
   button {
@@ -152,6 +157,8 @@ nav {
     font-size: 20px;
     height: 30px;
     width: 50px;
+    box-shadow: 0 4px 4px -2px #000000;
+    border-bottom: 3.8px black solid;
   }
 }
 
@@ -392,6 +399,22 @@ button,
   }
 }
 
+#viewMap {
+  background-color: black;
+  font-size: 40px;
+  width:80px;
+  height: 60px;
+  box-shadow: 0 4px 4px -2px #000000;
+  border-bottom: 3.8px black solid;
+}
+
+#viewMapInMapDisplay {
+  z-index: 2;
+  background-color: red;
+  font-size: 40px;
+  width: 60px;
+  margin-top: 5px;
+}
 
 // dance
 .dance .modal {
@@ -417,4 +440,22 @@ button,
   75% {
     transform: rotate(10deg);
   }
+}
+
+.markerBtn {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0px;
+}
+.markerBtn img{
+  width: 27.5px;
+  height: 30px;
+}
+
+.mapboxgl-marker {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0px;
 }
